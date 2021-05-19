@@ -68,3 +68,7 @@ constraint forall(m in 1..numMeses, a in 1..numAceitesTotales)(AceiteDisponible[
 %10.La producción tiene que ser positiva o 0
 constraint forall(m in 1..numMeses, a in 1..numAceitesTotales)(Produces[m,a]>=0);
 
+
+output [ "Produces:\n" ++ "\(Produces[1..numMeses, 1..numAceitesTotales])\n" ++
+         "Almacenas:\n" ++ "\(AceiteDisponible[1..numMeses, 1..numAceitesTotales])\n" ++
+         "Compras:\n" ++ "\(Compras[1..numMeses, 1..numAceitesTotales])" ];
