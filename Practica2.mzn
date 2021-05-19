@@ -31,9 +31,11 @@ constraint assert (forall(m in 1..numMeses, a in 1..numAceitesTotales)(CA[m,a]>0
 constraint assert (MinD>0, "las dureza mínima no puede ser negativa");
 constraint assert (MaxD>MinD, "las dureza máxima debe superar a la mínima");
 constraint assert (forall(ton in toneladas)(ton>0), "las toneladas finales no pueden ser negativas");
-constraint assert (MinB>0,"No pueden permitirse pérdidas");
+constraint assert (MinB>=0,"No pueden permitirse pérdidas");
 constraint assert (forall(dur in durezas)(dur>0), "las durezas de cada aceite no pueden ser negativas");
 constraint assert (forall(m in 1..numMeses, a in 1..numAceitesTotales)(precios[m,a]>0), "las precios mensuales de los aceites no pueden ser negativos");
+
+
 % 1. El producto está dentro de su dureza
 constraint forall(m in 1..numMeses)
  (sum(j in 1..numAceitesTotales)(durezas[j]*Produces[m,j]) <= MaxD*(sum(j in 1..numAceitesTotales)(Produces[m,j])) /\ sum(j in 1..numAceitesTotales)
@@ -52,10 +54,15 @@ constraint forall(m in 2..numMeses,a in 1..numAceitesTotales) (AceiteDisponible[
 constraint forall(a in 1..numAceitesTotales) (AceiteDisponible[1,a]=Compras[1,a]-Produces[1,a]);
 
 % 5. cada mes produces como mucho MAXV aceites vegetales
-constraint forall(m in 1..numMeses)(sum( a in 1..numAceitesV)(Produces[m,a])<=MAXV);
+constraint forall(m in 1..numMeses)(
+    sum( a in 1..numAceitesV)(Produces[m,a])   <= MAXV
+);
 
 % 6. cada mes produces como mucho MAXN aceites animales
-constraint forall(m in 1..numMeses)(sum( a in numAceitesV+1..numAceitesN)(Produces[m,a])<=MAXN);
+constraint forall(m in 1..numMeses)(
+    sum(a in numAceitesV..numAceitesV + numAceitesN)(Produces[m,a])  <= MAXN
+);
+
 % 7. En ningún mes se supera el almacenamiento disponible para cada aceite
 constraint forall(m in 1..numMeses,a in 1..numAceitesTotales)((AceiteDisponible[m,a])<=MCAP[a]);
 
