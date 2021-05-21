@@ -55,7 +55,7 @@ constraint forall(a in 1..numAceitesTotales) (AceiteDisponible[1,a]=Compras[1,a]
 
 % 5. cada mes produces como mucho MAXV aceites vegetales
 constraint forall(m in 1..numMeses)(
-    sum( a in 1..numAceitesV)(Produces[m,a])   <= MAXV
+    sum( a in 1..numAceitesV)(Produces[m,a])<= MAXV
 );
 
 % 6. cada mes produces como mucho MAXN aceites animales
@@ -75,7 +75,12 @@ constraint forall(m in 1..numMeses, a in 1..numAceitesTotales)(AceiteDisponible[
 %10.La producción tiene que ser positiva o 0
 constraint forall(m in 1..numMeses, a in 1..numAceitesTotales)(Produces[m,a]>=0);
 
+solve maximize (sum(m in 1..numMeses,a in 1..numAceitesTotales)
+   ((Produces[m,a]*VALOR) - (Compras[m,a]*precios[m,a] + CA[m,a]*AceiteDisponible[m,a])));
 
-output [ "Produces:\n" ++ "\(Produces[1..numMeses, 1..numAceitesTotales])\n" ++
-         "Almacenas:\n" ++ "\(AceiteDisponible[1..numMeses, 1..numAceitesTotales])\n" ++
-         "Compras:\n" ++ "\(Compras[1..numMeses, 1..numAceitesTotales])" ];
+output ["Produces:\n"] ++ ["\(Produces[m, 1..numAceitesTotales])\n" | m in 1..numMeses]++["\n"] ++
+       ["Almacenas:\n"] ++ ["\(AceiteDisponible[m, 1..numAceitesTotales])\n" | m in 1..numMeses]++["\n"] ++
+       ["Compras:\n"] ++ ["\(Compras[m, 1..numAceitesTotales])\n" | m in 1..numMeses]
+       ++["\nBeneficio Total: "]++["\(sum(m in 1..numMeses,a in 1..numAceitesTotales)
+   ((Produces[m,a]*VALOR) - (Compras[m,a]*precios[m,a] + CA[m,a]*AceiteDisponible[m,a])))\n"];
+       
