@@ -8,7 +8,8 @@ namespace Programacion_SMT
     {
         static void Main(string[] args)
         {
-            EscuchandoMusica(args);
+            SMTProgram p = new SMTProgram();
+            p.ProduccionDeAlimentos();
         }
     }
 }

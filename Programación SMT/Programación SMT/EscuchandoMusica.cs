@@ -6,7 +6,7 @@ namespace Programacion_SMT
 {
     partial class SMTProgram
     {
-        static string inputFilePath = "..\\..\\escuchandoMusicaInput1.txt";   // sustituir
+        //static string inputFilePath = "..\\..\\escuchandoMusicaInput1.txt";   // sustituir
 
         static int min;
         static int n;
