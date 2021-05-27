@@ -27,7 +27,7 @@ namespace Programacion_SMT
         string Produces(int i, int j) { return "Produces_" + i.ToString() + "_" + j.ToString(); }
         string Produces() { return "Produces_"; }
         string Compras(int i, int j) { return Compras() + i.ToString() + "_" + j.ToString(); }
-        string Compras() { return "Compras_"}
+        string Compras() { return "Compras_"; }
         string AceiteDisponible(int i, int j) { return AceiteDisponible() + i.ToString() + "_" + j.ToString(); }
         string AceiteDisponible() { return "AceiteDisponible_"; }
 
@@ -54,7 +54,7 @@ namespace Programacion_SMT
                     Console.WriteLine("ERROR: assertion failed. Check input at MCAP.");
                     return;
                 }
-            foreach (int i in ton)
+            foreach (int i in toneladas)
                 if (!(i > 0))
                 {
                     Console.WriteLine("ERROR: assertion failed. Check input at ton.");
@@ -83,18 +83,18 @@ namespace Programacion_SMT
 
 
             List<string> lines = new List<string> {
-                 ProduceModels(),
+                ProduceModels(),
                 SetLogic("QF_LRA")
             };
 
             // declaracion variables
-            for (int i = 1; i <= numMeses; i++)
+            for (int i = 0; i < numMeses; i++)
             {
-                for (int j = 1; j <= numAceitesTotales; j++)
+                for (int j = 0; j < numAceitesTotales; j++)
                 {
-                    lines.Add(intvar(Produces(i, j)));
-                    lines.Add(intvar(Compras(i, j)));
-                    lines.Add(intvar(AceiteDisponible(i, j)));
+                    lines.Add(intvar(Produces(i + 1, j + 1)));
+                    lines.Add(intvar(Compras(i + 1, j + 1)));
+                    lines.Add(intvar(AceiteDisponible(i + 1, j + 1)));
                 }
             }
 
@@ -106,66 +106,67 @@ namespace Programacion_SMT
                 for (int j = 0; j < numAceitesTotales; j++)
                     sumatorio.Add(durezas[j]);
 
-            addassert(addle(addsumOperacion(sumatorio, Produces(), "*", numMeses, numAceitesTotales),
-                addmul(MaxD.ToString(), addSumVar(Produces(), numMeses, numAceitesTotales))));
+            lines.Add(addassert(addle(addsumOperacion(sumatorio, Produces(), "*", 0, 0, numMeses, numAceitesTotales),
+                addmul(MaxD.ToString(), addSumVar(Produces(), numMeses - 1, numAceitesTotales - 1)))));
 
-            addassert(addge(addsumOperacion(sumatorio, Produces(), "*", numMeses, numAceitesTotales),
-                addmul(MinD.ToString(), addSumVar(Produces(), numMeses, numAceitesTotales))));
+            lines.Add(addassert(addge(addsumOperacion(sumatorio, Produces(), "*", 0, 0, numMeses, numAceitesTotales),
+                 addmul(MinD.ToString(), addSumVar(Produces(), numMeses - 1, numAceitesTotales - 1)))));
 
 
             //constraint(sum(m in 1..numMeses, a in 1..numAceitesTotales)
             //((Produces[m, a] * VALOR) - (Compras[m, a] * precios[m, a] + CA[m, a] * AceiteDisponible[m, a]))) >= MinB;
             List<int> sumatorioValor = new List<int>();
-            for (int i = 1; i <= numMeses; i++)
-                for (int j = 1; j <= numAceitesTotales; j++)
+            for (int i = 0; i < numMeses; i++)
+                for (int j = 0; j < numAceitesTotales; j++)
                     sumatorioValor.Add(VALOR);
 
             List<int> sumatorioPrecios = new List<int>();
-            for (int i = 1; i <= numMeses; i++)
-                for (int j = 1; j <= numAceitesTotales; j++)
+            for (int i = 0; i < numMeses; i++)
+                for (int j = 0; j < numAceitesTotales; j++)
                     sumatorioPrecios.Add(precios[i, j]);
 
             List<int> sumatorioCA = new List<int>();
-            for (int i = 1; i <= numMeses; i++)
-                for (int j = 1; j <= numAceitesTotales; j++)
+            for (int i = 0; i < numMeses; i++)
+                for (int j = 0; j < numAceitesTotales; j++)
                     sumatorioCA.Add(CA[i, j]);
 
-            addassert(addge(addminus(addsumOperacion(sumatorioValor, Produces(), "*", numMeses, numAceitesTotales),
-                addplus(addsumOperacion(sumatorioPrecios, Compras(), "*", numMeses, numAceitesTotales),
-                addsumOperacion(sumatorioCA, AceiteDisponible(), "*", numMeses, numAceitesTotales))), MinB.ToString()));
+            lines.Add(addassert(addge(addminus(addsumOperacion(sumatorioValor, Produces(), "*", 0, 0, numMeses, numAceitesTotales),
+                addplus(addsumOperacion(sumatorioPrecios, Compras(), "*", 0, 0, numMeses, numAceitesTotales),
+                addsumOperacion(sumatorioCA, AceiteDisponible(), "*", 0, 0, numMeses, numAceitesTotales))), MinB.ToString())));
 
 
             // % 3. Al final del año tienen que quedar "toneladas" toneladas de aceite
             // constraint forall(a in 1..numAceitesTotales) (AceiteDisponible[numMeses,a] = toneladas[a]);
-            for (int i = 1; i <= numAceitesTotales; i++)
+            for (int i = 0; i < numAceitesTotales; i++)
             {
-                addassert(
-                    addeq(AceiteDisponible(numMeses, i).ToString(), toneladas[i - 1].ToString())
-                );
+                lines.Add(addassert(
+                    addeq(AceiteDisponible(numMeses, i + 1).ToString(), toneladas[i].ToString())
+                ));
             }
 
             // % 4. cada mes nos queda lo que compramos menos lo que producimos más lo que teníamos almacenado anteriormente
             // constraint forall(m in 2..numMeses,a in 1..numAceitesTotales) (AceiteDisponible[m,a]=Compras[m,a]-Produces[m,a] +AceiteDisponible[m-1,a]);
-            for (int i = 2; i <= numMeses; i++)
+            for (int i = 1; i < numMeses; i++)
             {
-                for (int j = 1; j <= numAceitesTotales; j++)
+                for (int j = 0; j < numAceitesTotales; j++)
                 {
-                    addassert(
+                    lines.Add(addassert(
                         addeq(
-                            AceiteDisponible(i, j).ToString(),
+                            AceiteDisponible(i + 1, j + 1).ToString(),
                             addplus(
-                                addminus(Compras(i, j).ToString(), Produces(i, j).ToString()),
-                                AceiteDisponible(i - 1, j)
+                                addminus(Compras(i + 1, j + 1).ToString(), Produces(i + 1, j + 1).ToString()),
+                                AceiteDisponible(i, j + 1)
                                 )
                             )
+                        )
                     );
                 }
             }
             // %El primer mes no contamos con lo que teníamos almacenado anteriormente
             //constraint forall(a in 1..numAceitesTotales) (AceiteDisponible[1,a]=Compras[1,a]-Produces[1,a]);
-            for (int i = 1; i <= numAceitesTotales; i++)
+            for (int i = 0; i < numAceitesTotales; i++)
             {
-                addassert(addeq(AceiteDisponible(1, i), addminus(Compras(1, i), Produces(1, i))));
+                lines.Add(addassert(addeq(AceiteDisponible(1, i + 1), addminus(Compras(1, i + 1), Produces(1, i + 1)))));
             }
 
             //% 5.cada mes produces como mucho MAXV aceites vegetales
@@ -173,69 +174,68 @@ namespace Programacion_SMT
             //sum(a in 1..numAceitesV)(Produces[m, a]) <= MAXV
             //);
 
-            for (int i = 1; i <= numMeses; i++)
-                for (int j = 1; j <= numAceitesV; j++)
-                    addassert(addle(addSumVar(Produces(), numMeses, numAceitesV), MAXV.ToString()));
+
+            lines.Add(addassert(addle(addSumVar(Produces(), numMeses - 1, numAceitesV - 1), MAXV.ToString())));
 
             // % 6. cada mes produces como mucho MAXN aceites animales
             // constraint forall(m in 1..numMeses)(
             //     sum(a in numAceitesV..numAceitesV + numAceitesN)(Produces[m,a])  <= MAXN
             // );
             string myLine = "( + ";
-            for (int i = 1; i <= numMeses; i++)
+            for (int i = 0; i < numMeses; i++)
             {
                 for (int j = numAceitesV; j <= numAceitesV + numAceitesN; j++)
-                    myLine += Produces(i, j) + " ";
+                    myLine += Produces(i + 1, j + 1) + " ";
             }
             myLine += ")";
-            lines.Add(addle(myLine, MAXN.ToString()));
+            lines.Add(addassert(addle(myLine, MAXN.ToString())));
 
             // % 7. En ningún mes se supera el almacenamiento disponible para cada aceite
             // constraint forall(m in 1..numMeses,a in 1..numAceitesTotales)((AceiteDisponible[m,a])<=MCAP[a]);
-            for (int i = 1; i <= numMeses; i++)
-                for (int j = 1; j <= numAceitesTotales; j++)
-                    addassert(addle(AceiteDisponible(i, j), MCAP[j - 1].ToString()));
+            for (int i = 0; i < numMeses; i++)
+                for (int j = 0; j < numAceitesTotales; j++)
+                    lines.Add(addassert(addle(AceiteDisponible(i + 1, j + 1), MCAP[j].ToString())));
 
             // % 8.Las compras tienen que ser positivas o 0
             //constraint forall(m in 1..numMeses, a in 1..numAceitesTotales)(Compras[m, a] >= 0);
-            for (int i = 1; i < numMeses; i++)
+            for (int i = 0; i < numMeses; i++)
                 for (int j = 0; j < numAceitesTotales; j++)
-                    addassert(addge(Compras(i, j), "0"));
+                    lines.Add(addassert(addge(Compras(i + 1, j + 1), "0")));
 
             // %9.Los aceites disponibles tienen que ser positivas o 0
             // constraint forall(m in 1..numMeses, a in 1..numAceitesTotales)(AceiteDisponible[m,a]>=0);
-            for (int i = 1; i <= numMeses; i++)
-                for (int j = 1; j <= numAceitesTotales; j++)
-                    addassert(addge(AceiteDisponible(i, j), "0"));
+            for (int i = 0; i < numMeses; i++)
+                for (int j = 0; j < numAceitesTotales; j++)
+                    lines.Add(addassert(addge(AceiteDisponible(i + 1, j + 1), "0")));
 
             //% 10.La producción tiene que ser positiva o 0
             //constraint forall(m in 1..numMeses, a in 1..numAceitesTotales)(Produces[m, a] >= 0);
-            for (int i = 1; i <= numMeses; i++)
-                for (int j = 1; i <= numAceitesTotales; i++)
-                    addassert(addge(Produces(i, j), "0"));
+            for (int i = 0; i < numMeses; i++)
+                for (int j = 0; i < numAceitesTotales; i++)
+                    lines.Add(addassert(addge(Produces(i + 1, j + 1), "0")));
 
 
             lines.Add(checksat());
 
-            for (int i = 1; i <= numMeses; i++)
+            for (int i = 0; i < numMeses; i++)
             {
                 for (int j = 0; j < numAceitesTotales; j++)
                 {
-                    lines.Add(getvalue(Compras(i, j)));
+                    lines.Add(getvalue(Compras(i + 1, j + 1)));
                 }
             }
-            for (int i = 1; i <= numMeses; i++)
+            for (int i = 0; i < numMeses; i++)
             {
                 for (int j = 0; j < numAceitesTotales; j++)
                 {
-                    lines.Add(getvalue(Produces(i, j)));
+                    lines.Add(getvalue(Produces(i + 1, j + 1)));
                 }
             }
-            for (int i = 1; i <= numMeses; i++)
+            for (int i = 0; i < numMeses; i++)
             {
                 for (int j = 0; j < numAceitesTotales; j++)
                 {
-                    lines.Add(getvalue(AceiteDisponible(i, j)));
+                    lines.Add(getvalue(AceiteDisponible(i + 1, j + 1)));
                 }
             }
 
@@ -272,6 +272,13 @@ namespace Programacion_SMT
             }
             MinD = int.Parse(file.ReadLine());
             MaxD = int.Parse(file.ReadLine());
+            durezas = new int[numAceitesTotales];
+            buff = file.ReadLine();
+            split = buff.Split(" ");
+            for (int i = 0; i < numAceitesTotales; i++)
+            {
+                durezas[i] = int.Parse(split[i]);
+            }
             toneladas = new int[numAceitesTotales];
             buff = file.ReadLine();
             split = buff.Split(" ");
@@ -280,13 +287,6 @@ namespace Programacion_SMT
                 toneladas[i] = int.Parse(split[i]);
             }
             MinB = int.Parse(file.ReadLine());
-            durezas = new int[numAceitesTotales];
-            buff = file.ReadLine();
-            split = buff.Split(" ");
-            for (int i = 0; i < numAceitesTotales; i++)
-            {
-                durezas[i] = int.Parse(split[i]);
-            }
             precios = new int[numMeses, numAceitesTotales];
             for (int i = 0; i < numMeses; i++)
             {
@@ -300,5 +300,6 @@ namespace Programacion_SMT
             file.Close();
         }
     }
+}
 
 

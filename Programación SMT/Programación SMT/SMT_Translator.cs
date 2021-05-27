@@ -6,7 +6,7 @@ namespace Programacion_SMT
 {
     partial class SMTProgram
     {
-        static string filesPath = "D:\\Archivos\\Universidad\\3V\\PR\\SMTFiles\\";   // sustituir
+        static string filesPath = "..\\..\\";   // sustituir
         static void RellenaFichero(List<string> content, string path)
         {
             try
@@ -59,30 +59,34 @@ namespace Programacion_SMT
         }
         private static string _addSumVar(string variable, int i, int j, int initJ)
         {
-            if (i == 0 && j == 0) return "0";
-            if (i == 1) return variable + i.ToString();
-            if (i == 0 && j == 1) return variable + "0_1";
+            if (i == 0 && j == 0) return variable + "1_1";
             if (j == 0)
-                return "(+" + variable + i.ToString() + " " + _addSumVar(variable, i - 1, initJ, initJ) + ")";
-            return "(+" + variable + i.ToString() + " " + _addSumVar(variable, i, j - 1, initJ) + ")";
+                return "(+ " + variable + (i + 1).ToString() + "_" + (j + 1).ToString() + " " + _addSumVar(variable, i - 1, initJ, initJ) + ")";
+            return "(+ " + variable + (i + 1).ToString() + "_" + (j + 1).ToString() + " " + _addSumVar(variable, i, j - 1, initJ) + ")";
 
         }
         public static string addSumVar(string variable, int i)
         {
             if (i == 0) return "0";
-            if (i == 1) return variable + i.ToString();
-            return "(+" + variable + i.ToString() + " " + addSumVar(variable, i - 1) + ")";
+            if (i == 1) return variable + (i + 1).ToString();
+            return "(+" + variable + (i + 1).ToString() + " " + addSumVar(variable, i - 1) + ")";
         }
-        public static string addsumOperacion(List<int> valor, string variable, string operacion, int i, int j)
-        { return _addsumOperacion(valor, variable, operacion, i, j, i, j); }
-        private static string _addsumOperacion(List<int> valor, string variable, string operacion, int i, int j, int SizeI, int SizeJ)
+
+        public static string addsumOperacion(List<int> valor, string variable, string operacion, int i, int j, int SizeI, int SizeJ)
         {
-            if (i == 0 && j == 0) return "0";
-            if (i == 0 && j == 1) return valor[0].ToString();
-            int x = valor[valor.Count - 1];
-            valor.RemoveAt(valor.Count - 1);
-            if (j == 0) return "(+ " + _addsumOperacion(valor, variable, operacion, i - 1, SizeJ, SizeI, SizeJ) + " (" + operacion + " " + x + " " + variable + i.ToString() + "_" + j.ToString() + " )";
-            else return "(+ " + _addsumOperacion(valor, variable, operacion, i, j - 1, SizeI, SizeJ) + " (" + operacion + " " + x + " " + variable + i.ToString() + "_" + j.ToString() + " )";
+            if (valor.Count == 0) return "0";
+            if (valor.Count == 1) return valor[0].ToString();
+            return "( + " + __addsumOperacion(valor, variable, operacion, i, j, SizeI, SizeJ) + ")";
+        }
+
+        public static string __addsumOperacion(List<int> valor, string variable, string operacion, int i, int j, int SizeI, int SizeJ)
+        {
+            if (valor.Count == 0) return "0";
+            if (valor.Count == 1) return valor[0].ToString();
+            int x = valor[0];
+            valor.RemoveAt(0);
+            if (j == SizeJ) return " ( " + operacion + " " + x + " " + variable + (i + 1).ToString() + "_" + (j + 1).ToString() + " " + addsumOperacion(valor, variable, operacion, i + 1, 0, SizeI, SizeJ);
+            return " ( " + operacion + " " + x + " " + variable + (i + 1).ToString() + "_" + (j + 1).ToString() + " " + addsumOperacion(valor, variable, operacion, i, j + 1, SizeI, SizeJ);
         }
         static string addsumOperacion(List<int> valor, string variable, string operacion, int i)
         {
@@ -90,7 +94,7 @@ namespace Programacion_SMT
             if (i == 1) return valor[0].ToString();
             int x = valor[valor.Count - 1];
             valor.RemoveAt(valor.Count - 1);
-            return "(+ " + addsumOperacion(valor, variable, operacion, i - 1) + " (" + operacion + " " + x + " " + variable + i.ToString() + " )";
+            return "(+ " + addsumOperacion(valor, variable, operacion, i - 1) + " (" + operacion + " " + x + " " + variable + (i + 1).ToString() + " )";
         }
         static string checksat() { return "(check-sat)"; }
         static string getModel() { return "(get-model)"; }
