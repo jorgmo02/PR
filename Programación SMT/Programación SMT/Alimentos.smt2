@@ -1,5 +1,5 @@
 (set-logic QF_LIA)
-(get-objectives)(set-option :produce-models true)
+(set-option :produce-models true)
 (declare-fun Produces_1_1 () Int)
 (declare-fun Compras_1_1 () Int)
 (declare-fun AceiteDisponible_1_1 () Int)
