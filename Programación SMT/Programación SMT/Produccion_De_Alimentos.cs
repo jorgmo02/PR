@@ -84,6 +84,7 @@ namespace Programacion_SMT
 
             List<string> lines = new List<string> {
                 SetLogic("QF_LIA"),
+                getModel(),
                 ProduceModels()
             };
 
@@ -228,7 +229,7 @@ namespace Programacion_SMT
 
             lines.Add(addassert(addeq("Beneficio", beneficioAux)));
 
-            //lines.Add(addMaximize(beneficioAux));
+            lines.Add(addMaximize(beneficioAux));
 
             lines.Add(checksat());
 

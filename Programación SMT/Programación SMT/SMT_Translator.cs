@@ -19,6 +19,7 @@ namespace Programacion_SMT
             }
         }
 
+        static string GetObjectives() { return "(get-objectives)"; }
         static string ProduceModels() { return "(set-option :produce-models true)"; }
         static string SetLogic(string l) { return "(set-logic " + l + ")"; }
         static string intvar(string v) { return "(declare-fun " + v + " () Int)"; }
@@ -64,15 +65,15 @@ namespace Programacion_SMT
         }
 
 
-        private static string _addSumVarInicio(string variable,int inicioi,int inicioj, int i, int j, int initJ)
+        private static string _addSumVarInicio(string variable, int inicioi, int inicioj, int i, int j, int initJ)
         {
-            if (i == inicioi && j == inicioj) return variable + (i+1).ToString() + "_" + (j+1).ToString();
+            if (i == inicioi && j == inicioj) return variable + (i + 1).ToString() + "_" + (j + 1).ToString();
             if (j == inicioj)
-                return "(+ " + variable + (i + 1).ToString() + "_" + (j + 1).ToString() + " " + _addSumVarInicio(variable,inicioi,inicioj, i - 1, initJ, initJ) + ")";
-            return "(+ " + variable + (i + 1).ToString() + "_" + (j + 1).ToString() + " " + _addSumVarInicio(variable,inicioi,inicioj, i, j - 1, initJ) + ")";
+                return "(+ " + variable + (i + 1).ToString() + "_" + (j + 1).ToString() + " " + _addSumVarInicio(variable, inicioi, inicioj, i - 1, initJ, initJ) + ")";
+            return "(+ " + variable + (i + 1).ToString() + "_" + (j + 1).ToString() + " " + _addSumVarInicio(variable, inicioi, inicioj, i, j - 1, initJ) + ")";
         }
 
-        public static string addSumVarInicio(string variable, int i,int inicioi)
+        public static string addSumVarInicio(string variable, int i, int inicioi)
         {
             if (i == inicioi) return "0";
             if (i == inicioi + 1) return variable + (i + 1).ToString();
@@ -86,7 +87,7 @@ namespace Programacion_SMT
         }
         private static string _addSumVar(string variable, int i, int j, int initJ)
         {
-            if (i == 0 && j == 0) return variable + (i+1).ToString() + "_" + (j+1).ToString();
+            if (i == 0 && j == 0) return variable + (i + 1).ToString() + "_" + (j + 1).ToString();
             if (j == 0)
                 return "(+ " + variable + (i + 1).ToString() + "_" + (j + 1).ToString() + " " + _addSumVar(variable, i - 1, initJ, initJ) + ")";
             return "(+ " + variable + (i + 1).ToString() + "_" + (j + 1).ToString() + " " + _addSumVar(variable, i, j - 1, initJ) + ")";
@@ -102,7 +103,7 @@ namespace Programacion_SMT
         public static string addsumOperacion(List<int> valor, string variable, string operacion, int i, int j, int SizeI, int SizeJ)
         {
             if (valor.Count == 0) return "0";
-            if (valor.Count == 1) return valor[0].ToString();
+            if (valor.Count == 1) return "( " + operacion + " " + variable + (i + 1).ToString() + "_" + (j + 1).ToString() + " " + valor[0].ToString() + ")";
             return "(+ " + __addsumOperacion(valor, variable, operacion, i, j, SizeI, SizeJ) + ")";
         }
 
