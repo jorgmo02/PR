@@ -90,7 +90,7 @@ constraint forall(m in 1..numMeses, a in 1..numAceitesTotales)
 
 %13. Si usamos VEG1 o VEG2 hay que usar ANV3
 constraint forall(m in 1..numMeses)
-(Produces[m,1] > 0 \/ Produces[m,2] > 0 -> Produces[m,5] > 0);
+(Produces[m,1] + Produces[m,2] > 0 -> Produces[m,5] > 0);
 
 solve maximize (sum(m in 1..numMeses,a in 1..numAceitesTotales)
    ((Produces[m,a]*VALOR) - (Compras[m,a]*precios[m,a] + CA[m,a]*AceiteDisponible[m,a])));

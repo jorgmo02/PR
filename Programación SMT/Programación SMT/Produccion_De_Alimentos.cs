@@ -7,7 +7,7 @@ namespace Programacion_SMT
 {
     partial class SMTProgram
     {
-        static string inputFilePath = "..\\..\\Input.txt";   // sustituir
+        static string inputFilePath = "..\\..\\PruebaConstraint12.txt";   // sustituir
         int numAceitesV;
         int numAceitesN;
         int numAceitesTotales;
@@ -24,6 +24,9 @@ namespace Programacion_SMT
         int MaxDurezas;
         int[] durezas;
         int[,] precios;
+        int[,] LimitesAceites;
+        int[] toneladasMinimas;
+
         string Produces(int i, int j) { return "Produces_" + i.ToString() + "_" + j.ToString(); }
         string Produces() { return "Produces_"; }
         string Compras(int i, int j) { return Compras() + i.ToString() + "_" + j.ToString(); }
@@ -84,7 +87,6 @@ namespace Programacion_SMT
 
             List<string> lines = new List<string> {
                 SetLogic("QF_LIA"),
-                getModel(),
                 ProduceModels()
             };
 
@@ -99,6 +101,17 @@ namespace Programacion_SMT
                 }
             }
             lines.Add(intvar("Beneficio"));
+
+            lines.Add(addComent("0. Acotamos produces para ahorrarle trabajo al resolutor"));
+            //constraint forall(m in 1..numMeses, a in 1..numAceitesTotales)
+            //(Produces[m, a] < MAXV + MAXN);
+            for (int i = 0; i < numMeses; i++)
+            {
+                for (int j = 0; j < numAceitesTotales; j++)
+                {
+                    lines.Add(addassert(addlt(Produces(i + 1, j + 1), (MAXV + MAXN).ToString())));
+                }
+            }
 
             lines.Add(addComent("1. El producto está dentro de su dureza"));
             //constraint forall(m in 1..numMeses)
@@ -142,12 +155,15 @@ namespace Programacion_SMT
                 for (int j = 0; j < numAceitesTotales; j++)
                     sumatorioCA.Add(CA[i, j]);
 
-            string beneficioAux = addminus(addsumOperacion(sumatorioValor, Produces(), "*", 0, 0, numMeses, numAceitesTotales),
-                addplus(addsumOperacion(sumatorioPrecios, Compras(), "*", 0, 0, numMeses, numAceitesTotales),
-                addsumOperacion(sumatorioCA, AceiteDisponible(), "*", 0, 0, numMeses, numAceitesTotales)));
+            string beneficioAux = addminus(
+                addsumOperacion(sumatorioValor, Produces(), "*", 0, 0, numMeses, numAceitesTotales),
+                addplus(
+                    addsumOperacion(sumatorioPrecios, Compras(), "*", 0, 0, numMeses, numAceitesTotales),
+                    addsumOperacion(sumatorioCA, AceiteDisponible(), "*", 0, 0, numMeses, numAceitesTotales)
+                ));
 
             lines.Add(addassert(addge(beneficioAux, MinB.ToString())));
-            
+
 
             lines.Add(addComent("3. Al final del año tienen que quedar \"toneladas\" toneladas de aceite"));
             // constraint forall(a in 1..numAceitesTotales) (AceiteDisponible[numMeses,a] = toneladas[a]);
@@ -187,17 +203,19 @@ namespace Programacion_SMT
             //constraint forall(m in 1..numMeses)(
             //sum(a in 1..numAceitesV)(Produces[m, a]) <= MAXV
             //);
-            for(int i = 0; i < numMeses; i++) {
-                lines.Add(addassert(addle(addSumVar(Produces()+(i+1).ToString()+"_", numAceitesV - 1), MAXV.ToString())));
+            for (int i = 0; i < numMeses; i++)
+            {
+                lines.Add(addassert(addle(addSumVar(Produces() + (i + 1).ToString() + "_", numAceitesV - 1), MAXV.ToString())));
             }
 
             lines.Add(addComent("6. Cada mes produces como mucho MAXN aceites animales"));
             // constraint forall(m in 1..numMeses)(
             //     sum(a in numAceitesV..numAceitesV + numAceitesN)(Produces[m,a])  <= MAXN
             // );
-//            lines.Add(addassert(addle(addSumVarInicio(Produces(), numMeses, numAceitesN + numAceitesV, 0, numAceitesV), MAXN.ToString())));
-            for(int i = 0; i < numMeses; i++) {
-                lines.Add(addassert(addle(addSumVarInicio(Produces()+(i+1).ToString()+"_", numAceitesN + numAceitesV - 1, numAceitesV-1), MAXN.ToString())));
+            //            lines.Add(addassert(addle(addSumVarInicio(Produces(), numMeses, numAceitesN + numAceitesV, 0, numAceitesV), MAXN.ToString())));
+            for (int i = 0; i < numMeses; i++)
+            {
+                lines.Add(addassert(addle(addSumVarInicio(Produces() + (i + 1).ToString() + "_", numAceitesN + numAceitesV - 1, numAceitesV - 1), MAXN.ToString())));
             }
 
             lines.Add(addComent("7. En ningún mes se supera el almacenamiento disponible para cada aceite"));
@@ -223,6 +241,39 @@ namespace Programacion_SMT
             for (int i = 0; i < numMeses; i++)
                 for (int j = 0; j < numAceitesTotales; j++)
                     lines.Add(addassert(addge(Produces(i + 1, j + 1), "0")));
+
+            //constraint forall(m in 1..numMeses, a in 1..numAceitesTotales )
+            //(LimitesAceites[m, a] = 1->Produces[m, a] = 0);
+            lines.Add(addComent("11. Cada mes solo se podrán usar unos determinados aceites"));
+            for (int i = 0; i < numMeses; i++)
+            {
+                for (int j = 0; j < numAceitesTotales; j++)
+                {
+                    if (LimitesAceites[i, j] == 1)
+                        lines.Add(addassert(addeq(Produces(i + 1, j + 1), "0")));
+                }
+            }
+
+            lines.Add(addComent("12. Si se usa un aceite hay que usar al menos X toneladas"));
+            //constraint forall(m in 1..numMeses, a in 1..numAceitesTotales)
+            //(Produces[m, a] == 0 \/ Produces[m, a] >= toneladasMinimas[a]);
+            for (int i = 0; i < numMeses; i++)
+                for (int j = 0; j < numAceitesTotales; j++)
+                    lines.Add(addassert(
+                        addor(
+                            addeq(Produces(i + 1, j + 1), "0"),
+                            addge(Produces(i + 1, j + 1), toneladasMinimas[j].ToString())
+                            )
+                        )
+                    );
+
+
+
+            lines.Add(addComent("13. Si usamos VEG1 o VEG2 hay que usar ANV3"));
+            // constraint forall(m in 1..numMeses)
+            // ((Produces[m, 1] + Produces[m, 2]) > 0->Produces[m, 5] > 0);
+            for (int i = 0; i < numMeses; i++)
+                lines.Add(addassert(addimply(addgt(addplus(Produces(i + 1, 1), Produces(i + 1, 2)), "0"), addgt(Produces(i + 1, 5), "0"))));
 
 
             lines.Add(addComent("Maximizar las ganancias"));
@@ -257,6 +308,7 @@ namespace Programacion_SMT
             lines.Add(getvalue("Beneficio"));
             RellenaFichero(lines, "ProduccionDeAlimentos.smt2");
         }
+
 
         void LeeProduccionDeAlimentos()
         {
@@ -313,9 +365,27 @@ namespace Programacion_SMT
                     precios[i, j] = int.Parse(split[j]);
                 }
             }
+
+            LimitesAceites = new int[numMeses, numAceitesTotales];
+            for (int i = 0; i < numMeses; i++)
+            {
+                buff = file.ReadLine();
+                split = buff.Split(' ');
+                for (int j = 0; j < numAceitesTotales; j++)
+                {
+                    LimitesAceites[i, j] = int.Parse(split[j]);
+                }
+            }
+
+            toneladasMinimas = new int[numAceitesTotales];
+            buff = file.ReadLine();
+            split = buff.Split(' ');
+            for (int i = 0; i < numAceitesTotales; i++)
+            {
+                toneladasMinimas[i] = int.Parse(split[i]);
+            }
             file.Close();
         }
     }
 }
-
 
