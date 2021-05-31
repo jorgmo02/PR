@@ -15,6 +15,8 @@ int: MinB;
 float: MaxDurezas;
 array [1..numAceitesTotales]of par 1.0..MaxDurezas:durezas; 
 array [1..numMeses,1..numAceitesTotales] of par int:precios;
+array [1..numMeses,1..numAceitesTotales] of 0..1:LimitesAceites;
+array [1..numAceitesTotales] of int:toneladasMinimas;
 array[1..numMeses,1..numAceitesTotales] of var int:Produces;
 array[1..numMeses,1..numAceitesTotales] of var int:Compras;
 array[1..numMeses,1..numAceitesTotales] of var int:AceiteDisponible;
@@ -35,6 +37,9 @@ constraint assert (MinB>=0,"No pueden permitirse pérdidas");
 constraint assert (forall(dur in durezas)(dur>0), "las durezas de cada aceite no pueden ser negativas");
 constraint assert (forall(m in 1..numMeses, a in 1..numAceitesTotales)(precios[m,a]>0), "las precios mensuales de los aceites no pueden ser negativos");
 
+%0.Acotamos produces para ahorrarle trabajo al resolutor
+constraint forall(m in 1..numMeses, a in 1..numAceitesTotales)
+(Produces[m,a]<MAXV+MAXN);
 
 % 1. El producto está dentro de su dureza
 constraint forall(m in 1..numMeses)
@@ -74,6 +79,18 @@ constraint forall(m in 1..numMeses, a in 1..numAceitesTotales)(AceiteDisponible[
 
 %10.La producción tiene que ser positiva o 0
 constraint forall(m in 1..numMeses, a in 1..numAceitesTotales)(Produces[m,a]>=0);
+
+%11.Cada mes solo se podrán usar unos determinados aceites
+constraint forall(m in 1..numMeses, a in 1..numAceitesTotales)
+(LimitesAceites[m,a]=1->Produces[m,a]=0);
+
+%12.Si se usa un aceite hay que usar al menos X toneladas
+constraint forall(m in 1..numMeses, a in 1..numAceitesTotales)
+(Produces[m,a] == 0 \/ Produces[m,a] >= toneladasMinimas[a]);
+
+%13. Si usamos VEG1 o VEG2 hay que usar ANV3
+constraint forall(m in 1..numMeses)
+(Produces[m,1] > 0 \/ Produces[m,2] > 0 -> Produces[m,5] > 0);
 
 solve maximize (sum(m in 1..numMeses,a in 1..numAceitesTotales)
    ((Produces[m,a]*VALOR) - (Compras[m,a]*precios[m,a] + CA[m,a]*AceiteDisponible[m,a])));
