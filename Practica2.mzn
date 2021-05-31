@@ -84,6 +84,10 @@ constraint forall(m in 1..numMeses, a in 1..numAceitesTotales)(Produces[m,a]>=0)
 constraint forall(m in 1..numMeses, a in 1..numAceitesTotales)
 (LimitesAceites[m,a]=1->Produces[m,a]=0);
 
+%constraint forall(m in 1..numMeses) (
+%	sum(a in 1..numAceitesTotales) (bool2int(Produces[m,a] > 0)) <= K
+%);
+
 %12.Si se usa un aceite hay que usar al menos X toneladas
 constraint forall(m in 1..numMeses, a in 1..numAceitesTotales)
 (Produces[m,a] == 0 \/ Produces[m,a] >= toneladasMinimas[a]);
