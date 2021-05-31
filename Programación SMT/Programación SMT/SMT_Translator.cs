@@ -6,6 +6,7 @@ namespace Programacion_SMT
 {
     partial class SMTProgram
     {
+        public SMTProgram(string path) { inputFilePath = "..\\..\\" + path; }
         static string filesPath = "..\\..\\";   // sustituir
         static void RellenaFichero(List<string> content, string path)
         {

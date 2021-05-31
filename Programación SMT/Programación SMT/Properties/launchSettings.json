@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Programacion SMT": {
+      "commandName": "Project",
+      "commandLineArgs": "Practica2.txt"
+    }
+  }
+}

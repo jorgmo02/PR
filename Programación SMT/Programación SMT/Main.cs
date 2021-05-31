@@ -8,7 +8,7 @@ namespace Programacion_SMT
     {
         static void Main(string[] args)
         {
-            SMTProgram p = new SMTProgram();
+            SMTProgram p = new SMTProgram(args[0]);
             p.ProduccionDeAlimentos();
         }
     }
