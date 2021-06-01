@@ -253,6 +253,16 @@ namespace Programacion_SMT
                         lines.Add(addassert(addeq(Produces(i + 1, j + 1), "0")));
                 }
             }
+            //% constraint forall(m in 1..numMeses)(
+            // % sum(a in 1..numAceitesTotales)(bool2int(Produces[m, a] > 0)) <= K
+            // %);
+            for (int i = 0; i < numMeses; i++)
+            {
+                List<int> ceros = new List<int>();
+                for (int j = 0; j < numAceitesTotales; j++)
+                    ceros.Add(0);
+                lines.Add(addassert(addle(addSumBool2IntVar(ceros, Produces() + (i + 1).ToString() + "_", ">", numAceitesTotales), K.ToString())));
+            }
 
             lines.Add(addComent("12. Si se usa un aceite hay que usar al menos X toneladas"));
             //constraint forall(m in 1..numMeses, a in 1..numAceitesTotales)
@@ -275,12 +285,7 @@ namespace Programacion_SMT
                 lines.Add(addassert(addimply(addgt(addplus(Produces(i + 1, 1), Produces(i + 1, 2)), "0"), addgt(Produces(i + 1, 5), "0"))));
 
 
-            //% constraint forall(m in 1..numMeses)(
-            // % sum(a in 1..numAceitesTotales)(bool2int(Produces[m, a] > 0)) <= K
-            // %);
-            for (int i = 0; i < numMeses; i++)
-                ;// lines.Add(addassert(addle(addSumBool2IntVar(Produces() + (i + 1).ToString() + "_", "> 0", numAceitesTotales), K.ToString())));
-
+            
             lines.Add(addComent("Maximizar las ganancias"));
 
             lines.Add(addassert(addeq("Beneficio", beneficioAux)));

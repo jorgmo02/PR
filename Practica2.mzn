@@ -2,7 +2,7 @@ int: numAceitesV;
 int: numAceitesN;
 int: numAceitesTotales=numAceitesV+numAceitesN;
 int: numMeses;
-%una var con lo que produces cada mes puede ser útil
+int: K;
 int: VALOR;
 int: MAXV;
 int: MAXN;
@@ -84,9 +84,9 @@ constraint forall(m in 1..numMeses, a in 1..numAceitesTotales)(Produces[m,a]>=0)
 constraint forall(m in 1..numMeses, a in 1..numAceitesTotales)
 (LimitesAceites[m,a]=1->Produces[m,a]=0);
 
-%constraint forall(m in 1..numMeses) (
-%	sum(a in 1..numAceitesTotales) (bool2int(Produces[m,a] > 0)) <= K
-%);
+constraint forall(m in 1..numMeses) (
+sum(a in 1..numAceitesTotales) (bool2int(Produces[m,a] > 0)) <= K
+);
 
 %12.Si se usa un aceite hay que usar al menos X toneladas
 constraint forall(m in 1..numMeses, a in 1..numAceitesTotales)
