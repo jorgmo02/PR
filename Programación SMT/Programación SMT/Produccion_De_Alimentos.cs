@@ -21,11 +21,11 @@ namespace Programacion_SMT
         int MaxD;
         int[] toneladas;
         int MinB;
-        int MaxDurezas;
         int[] durezas;
         int[,] precios;
         int[,] LimitesAceites;
         int[] toneladasMinimas;
+        int K;
 
         string Produces(int i, int j) { return "Produces_" + i.ToString() + "_" + j.ToString(); }
         string Produces() { return "Produces_"; }
@@ -242,9 +242,9 @@ namespace Programacion_SMT
                 for (int j = 0; j < numAceitesTotales; j++)
                     lines.Add(addassert(addge(Produces(i + 1, j + 1), "0")));
 
+            lines.Add(addComent("11. Cada mes solo se podrán usar unos determinados aceites"));
             //constraint forall(m in 1..numMeses, a in 1..numAceitesTotales )
             //(LimitesAceites[m, a] = 1->Produces[m, a] = 0);
-            lines.Add(addComent("11. Cada mes solo se podrán usar unos determinados aceites"));
             for (int i = 0; i < numMeses; i++)
             {
                 for (int j = 0; j < numAceitesTotales; j++)
@@ -268,13 +268,18 @@ namespace Programacion_SMT
                     );
 
 
-
             lines.Add(addComent("13. Si usamos VEG1 o VEG2 hay que usar ANV3"));
             // constraint forall(m in 1..numMeses)
             // ((Produces[m, 1] + Produces[m, 2]) > 0->Produces[m, 5] > 0);
             for (int i = 0; i < numMeses; i++)
                 lines.Add(addassert(addimply(addgt(addplus(Produces(i + 1, 1), Produces(i + 1, 2)), "0"), addgt(Produces(i + 1, 5), "0"))));
 
+
+            //% constraint forall(m in 1..numMeses)(
+            // % sum(a in 1..numAceitesTotales)(bool2int(Produces[m, a] > 0)) <= K
+            // %);
+            for (int i = 0; i < numMeses; i++)
+                ;// lines.Add(addassert(addle(addSumBool2IntVar(Produces() + (i + 1).ToString() + "_", "> 0", numAceitesTotales), K.ToString())));
 
             lines.Add(addComent("Maximizar las ganancias"));
 
@@ -327,7 +332,6 @@ namespace Programacion_SMT
             {
                 MCAP[i] = int.Parse(split[i]);
             }
-            MaxDurezas = int.Parse(file.ReadLine());
             CA = new int[numMeses, numAceitesTotales];
             for (int i = 0; i < numMeses; i++)
             {
@@ -384,6 +388,7 @@ namespace Programacion_SMT
             {
                 toneladasMinimas[i] = int.Parse(split[i]);
             }
+            K = int.Parse(file.ReadLine());
             file.Close();
         }
     }

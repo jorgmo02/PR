@@ -2,7 +2,7 @@
   "profiles": {
     "Programacion SMT": {
       "commandName": "Project",
-      "commandLineArgs": "Practica2.txt"
+      "commandLineArgs": "PruebaConstraint12.txt"
     }
   }
 }

@@ -108,6 +108,27 @@ namespace Programacion_SMT
             return "(+ " + __addsumOperacion(valor, variable, operacion, i, j, SizeI, SizeJ) + ")";
         }
 
+        public static string addSumBool2IntVar(string variable, string comparison, int i)
+        {
+            if (i == 0) return bool2int(variable + (i + 1).ToString() + " " + comparison);
+            return "(+ " + bool2int(variable + (i + 1).ToString() + " " + comparison) + " " + addSumBool2IntVar(variable, comparison, i-1) + ")";
+        }
+
+        public static string addSumBool2IntVar(string variable, string comparison, int i, int j, int initJ)
+        {
+            if (i == 0 && j == 0) return bool2int(variable + (i + 1).ToString() + "_" + (j + 1).ToString() + " " + comparison);
+            int auxI = i, auxJ = j - 1;
+            if (j == 0)
+            {
+                auxI = i - 1;
+                auxJ = initJ;
+            }
+            return "(+ " +
+                bool2int(variable + (i + 1).ToString() + "_" + (j + 1).ToString() + " " + comparison) + " " +
+                addSumBool2IntVar(variable, comparison, auxI, auxJ, initJ) +
+                ")";
+        }
+
         // (+ 0 (+ (* 3 variable) 0)))
         // (+ (* 4 variable) (+ (* 3 variable) 0)))
 
