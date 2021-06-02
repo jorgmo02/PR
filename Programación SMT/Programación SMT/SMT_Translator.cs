@@ -6,8 +6,9 @@ namespace Programacion_SMT
 {
     partial class SMTProgram
     {
-        public SMTProgram(string path) { inputFilePath = "..\\..\\" + path; }
-        static string filesPath = "..\\..\\";   // sustituir
+        public SMTProgram(string input) { inputFilePath = input; }
+        public SMTProgram(string input,string output) { inputFilePath = input; filesPath = output; }
+        static string filesPath=".\\";   // sustituir
         static void RellenaFichero(List<string> content, string path)
         {
             try
@@ -110,10 +111,10 @@ namespace Programacion_SMT
 
         public static string addSumBool2IntVar(List<int> valores, string variable, string comparison, int i)
         {
-            if (i == 1) return "(ite ( " + comparison + " " + variable + (i ).ToString() +" "+ valores[0].ToString() + ") 1 0)";
+            if (i == 1) return "(ite ( " + comparison + " " + variable + (i).ToString() + " " + valores[0].ToString() + ") 1 0)";
             int x = valores[valores.Count - 1];
             valores.RemoveAt(valores.Count - 1);
-            return "(+ " + "(ite ( " + comparison + " " + variable + (i ).ToString() + " " + x.ToString() + ") 1 0)" + " " + addSumBool2IntVar(valores, variable, comparison, i - 1) + ")";
+            return "(+ " + "(ite ( " + comparison + " " + variable + (i).ToString() + " " + x.ToString() + ") 1 0)" + " " + addSumBool2IntVar(valores, variable, comparison, i - 1) + ")";
         }
 
         public static string addSumBool2IntVar(List<int> valores, string variable, string comparison, int i, int j, int initJ)
@@ -129,7 +130,7 @@ namespace Programacion_SMT
             valores.RemoveAt(valores.Count - 1);
             valores.RemoveAt(valores.Count - 1);
             return "(+ " +
-                "(ite (" + comparison + " " + variable + (i ).ToString() + "_" + (j).ToString()+" " + x.ToString() + ") 1 0 " +
+                "(ite (" + comparison + " " + variable + (i).ToString() + "_" + (j).ToString() + " " + x.ToString() + ") 1 0 " +
                 addSumBool2IntVar(valores, variable, comparison, auxI, auxJ, initJ) +
                 ")";
         }

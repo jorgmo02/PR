@@ -7,7 +7,7 @@ namespace Programacion_SMT
 {
     partial class SMTProgram
     {
-        static string inputFilePath = "PruebaConstraint12.txt";   // sustituir
+        static string inputFilePath;   // sustituir
         int numAceitesV;
         int numAceitesN;
         int numAceitesTotales;
